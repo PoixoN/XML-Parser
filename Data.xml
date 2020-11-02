@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<GamesDataBase>
+	<Game
+		Name = "RD2"
+		Year = "2018"
+		Genre = "Open world"
+		Company= "RockStar"
+		Rating= "9.8/10"
+		Price = "120$"/>
+	<Game
+		Name = "GTA V"
+		Year = "2013"
+		Genre = "Open world"
+		Company= "RockStar"
+		Rating= "9.6/10"
+		Price = "60$"/>
+	<Game
+		Name = "CS: GO"
+		Year = "2013"
+		Genre = "Match making"
+		Company= "Valve"
+		Rating= "9.1/10"
+		Price = "Free"/>
+	<Game
+		Name = "Dota 2"
+		Year = "2010"
+		Genre = "Match making"
+		Company= "Valve"
+		Rating= "8.2/10"
+		Price = "Free"/>
+	<Game
+		Name = "Rainbox six: siege"
+		Year = "2015"
+		Genre = "Match making"
+		Company= "Ubisoft"
+		Rating= "9.9/10"
+		Price = "12$"/>
+	<Game
+		Name = "Among us"
+		Year = "2018"
+		Genre = "Match making"
+		Company= "InnerSloth"
+		Rating= "9.3/10"
+		Price = "Free"/>
+	<Game
+		Name = "PUBG"
+		Year = "2015"
+		Genre = "Match making"
+		Company= "SofrWear"
+		Rating= "8.1/10"
+		Price = "25$"/>
+	<Game
+		Name = "Outlast"
+		Year = "2013"
+		Genre = "Horror"
+		Company= "Frostbyte"
+		Rating= "7.8/10"
+		Price = "9.9$"/>
+	<Game
+		Name = "Raft"
+		Year = "2018"
+		Genre = "Adventure"
+		Company= "Hardgames"
+		Rating= "4.2/10"
+		Price = "35$"/>
+	<Game
+		Name = "Run and Byte"
+		Year = "2007"
+		Genre = "Shooter"
+		Company= "CrazyGames"
+		Rating= "1.2/10"
+		Price = "4$"/>
+	<Game
+		Name = "Death Stranding"
+		Year = "2020"
+		Genre = "Adventure"
+		Company= "CogjimaGames"
+		Rating= "9.7/10"
+		Price = "145$"/>
+	<Game
+		Name = "Cold War"
+		Year = "2017"
+		Genre = "Shooter"
+		Company= "BlackMamba"
+		Rating= "3.3/10"
+		Price = "60$"/>
+</GamesDataBase>
