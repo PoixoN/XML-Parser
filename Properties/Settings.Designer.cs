@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Lab3.Properties
+namespace XmlParser.Properties
 {
 
 

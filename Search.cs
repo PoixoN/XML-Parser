@@ -1,51 +1,34 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using System.Linq;
 
-namespace Lab3
+namespace XmlParser
 {
     public interface ISearch
     {
         List<Game> Search(SearchCriteria criteria);
     }
 
+    #region Dom search
     public class DomSearch : ISearch
     {
-        private const int _maxCriteriaCount = 6;//===============================
-
         public List<Game> Search(SearchCriteria criteria)
         {
             List<Game> games = new List<Game>();
             XmlDocument doc = new XmlDocument();
-            doc.Load(PlaylistReader.dataPath);
-
-            /*XmlNode root = doc.DocumentElement;
-            
-            foreach (XmlNode gameNode in root.ChildNodes)
-            {
-                Game game = new Game();
-
-                foreach (XmlAttribute attribute in gameNode.Attributes)
-                {
-                    FillAttributes(game, attribute, criteria);
-                }
-
-                games.Add(game.HasEmptyAttribute() ? null : game);
-            }*/
+            doc.Load(From1.dataPath);
 
             XmlNodeList gameNodes;
 
             string xPathCriteria = "";
-            string gameSearchTag = "//" + PlaylistReader.gameTag;
+            string gameSearchTag = "//" + From1.gameTag;
 
             List<string> attributes = new List<string>();
-            attributes.Add(PlaylistReader.genre);
-            attributes.Add(PlaylistReader.year);
-            attributes.Add(PlaylistReader.company);
-            //attributes.Add(PlaylistReader.rating);
-            //attributes.Add(PlaylistReader.price);
+            attributes.Add(From1.genre);
+            attributes.Add(From1.year);
+            attributes.Add(From1.company);
 
             List<string> criteriaList = new List<string>();
             criteriaList.Add(criteria.Genre);
@@ -77,98 +60,58 @@ namespace Lab3
             foreach (XmlNode gameNode in gameNodes)
             {
                 Game game = new Game();
-                FillAttributes(game, gameNode, criteria);
+                AddCreterias(game, gameNode, criteria);
                 if (!game.HasEmptyAttribute())
                 {
                     games.Add(game);
                 }
             }
-            //string xPathQuery = ;
-            //doc.SelectNodes()
 
             return games;
         }
 
-        private void FillAttributes(Game game, XmlNode gameNode, SearchCriteria criteria)
+        /// <summary>
+        /// Sets the the game's attributes
+        /// </summary>
+        private void AddCreterias(Game game, XmlNode gameNode, SearchCriteria criteria)
         {
-            game.Name = gameNode.Attributes[PlaylistReader.name].Value;
-            game.Genre = gameNode.Attributes[PlaylistReader.genre].Value;
-            game.Company = gameNode.Attributes[PlaylistReader.company].Value;
-            game.Year = gameNode.Attributes[PlaylistReader.year].Value;
+            game.Name = gameNode.Attributes[From1.name].Value;
+            game.Genre = gameNode.Attributes[From1.genre].Value;
+            game.Company = gameNode.Attributes[From1.company].Value;
+            game.Year = gameNode.Attributes[From1.year].Value;
 
             if (!criteria.Rating.Equals(""))
             {
                 game.Rating = criteria.IsRatingInCriteria(
-                    gameNode.Attributes[PlaylistReader.rating].Value, criteria.Rating) ?
-                    gameNode.Attributes[PlaylistReader.rating].Value : "";
+                    gameNode.Attributes[From1.rating].Value, criteria.Rating) ?
+                    gameNode.Attributes[From1.rating].Value : "";
             }
             else
             {
-                game.Rating = gameNode.Attributes[PlaylistReader.rating].Value;
+                game.Rating = gameNode.Attributes[From1.rating].Value;
             }
 
             if (!criteria.Price.Equals(""))
             {
                 game.Price = criteria.IsPriceInCriteria(
-                gameNode.Attributes[PlaylistReader.price].Value, criteria.Price) ?
-                gameNode.Attributes[PlaylistReader.price].Value : "";
+                gameNode.Attributes[From1.price].Value, criteria.Price) ?
+                gameNode.Attributes[From1.price].Value : "";
             }
             else
             {
-                game.Price = gameNode.Attributes[PlaylistReader.price].Value;
+                game.Price = gameNode.Attributes[From1.price].Value;
             }
-        }
-
-        // Sets the speified game's attributes.
-        private void FillAttributes(Game game, XmlAttribute attribute, SearchCriteria criteria)
-        {
-            string attrName = attribute.Name;
-            string attrValue = attribute.Value;
-
-            if (attrName.Equals(PlaylistReader.name))
-            {
-                game.Name = attrValue;
-            }
-            if (attrName.Equals(PlaylistReader.genre))
-            {
-                game.Genre = ResolveCriteria(criteria.Genre, attrValue);
-            }
-            if (attrName.Equals(PlaylistReader.year))
-            {
-                game.Year = ResolveCriteria(criteria.Year, attrValue);
-            }
-            if (attrName.Equals(PlaylistReader.company))
-            {
-                game.Company = ResolveCriteria(criteria.Company, attrValue);
-            }
-            if (attrName.Equals(PlaylistReader.rating))
-            {
-                game.Rating = criteria.IsRatingInCriteria(attrValue, criteria.Rating) ? attrValue : "";
-            }
-            if (attrName.Equals(PlaylistReader.price))
-            {
-                game.Price = criteria.IsPriceInCriteria(attrValue, criteria.Price) ? attrValue : "";
-            }
-        }
-
-        // Works on the search criteria constarints.
-        private string ResolveCriteria(string criteria, string attrValue)
-        {
-            if (criteria.Equals(""))
-            {
-                return attrValue;
-            }
-
-            return attrValue.Equals(criteria) ? attrValue : "";
         }
     }
+    #endregion
 
+    #region Sax search
     public class SaxSearch : ISearch
     {
         public List<Game> Search(SearchCriteria criteria)
         {
             List<Game> games = new List<Game>();
-            var xmlReader = new XmlTextReader(PlaylistReader.dataPath);
+            var xmlReader = new XmlTextReader(From1.dataPath);
 
             while (xmlReader.Read())
             {
@@ -178,7 +121,7 @@ namespace Lab3
 
                     while (xmlReader.MoveToNextAttribute())
                     {
-                        FillAttributes(game, xmlReader, criteria);
+                        AddCriterias(game, xmlReader, criteria);
                     }
 
                     games.Add(game.HasEmptyAttribute() ? null : game);
@@ -188,40 +131,41 @@ namespace Lab3
             return games;
         }
 
-        // Sets the speified game's attributes.
-        private void FillAttributes(Game game, XmlReader xmlReader, SearchCriteria criteria)
+        /// <summary>
+        /// Sets the the game's attributes
+        /// </summary>
+        private void AddCriterias(Game game, XmlReader xmlReader, SearchCriteria criteria)
         {
             string attrName = xmlReader.Name;
             string attrValue = xmlReader.Value;
 
-            if (attrName.Equals(PlaylistReader.name))
+            if (attrName.Equals(From1.name))
             {
                 game.Name = attrValue;
             }
-            if (attrName.Equals(PlaylistReader.genre))
+            if (attrName.Equals(From1.genre))
             {
-                game.Genre = ResolveCriteria(criteria.Genre, attrValue);
+                game.Genre = CheckCriteria(criteria.Genre, attrValue);
             }
-            if (attrName.Equals(PlaylistReader.year))
+            if (attrName.Equals(From1.year))
             {
-                game.Year = ResolveCriteria(criteria.Year, attrValue);
+                game.Year = CheckCriteria(criteria.Year, attrValue);
             }
-            if (attrName.Equals(PlaylistReader.company))
+            if (attrName.Equals(From1.company))
             {
-                game.Company = ResolveCriteria(criteria.Company, attrValue);
+                game.Company = CheckCriteria(criteria.Company, attrValue);
             }
-            if (attrName.Equals(PlaylistReader.rating))
+            if (attrName.Equals(From1.rating))
             {
                 game.Rating = criteria.IsRatingInCriteria(attrValue, criteria.Rating) ? attrValue : "";
             }
-            if (attrName.Equals(PlaylistReader.price))
+            if (attrName.Equals(From1.price))
             {
                 game.Price = criteria.IsPriceInCriteria(attrValue, criteria.Price) ? attrValue : "";
             }
         }
 
-        // Works on the search criteria constarints.
-        private string ResolveCriteria(string criteria, string attrValue)
+        private string CheckCriteria(string criteria, string attrValue)
         {
             if (criteria.Equals(""))
             {
@@ -231,43 +175,45 @@ namespace Lab3
             return attrValue.Equals(criteria) ? attrValue : "";
         }
     }
+    #endregion
 
+    #region LINQ search
     public class LinqToXmlSearch : ISearch
     {
         public List<Game> Search(SearchCriteria criteria)
         {
             List<Game> games = new List<Game>();
-            var doc = XDocument.Load(PlaylistReader.dataPath);
+            var doc = XDocument.Load(From1.dataPath);
 
-            var gamesInList = from obj in doc.Descendants(PlaylistReader.gameTag)
+            var gamesInList = from obj in doc.Descendants(From1.gameTag)
                               select new
                               {
-                                  name = obj.Attribute(PlaylistReader.name).Value,
+                                  name = obj.Attribute(From1.name).Value,
 
                                   year = criteria.Year.Equals("") ?
-                                  obj.Attribute(PlaylistReader.year).Value :
-                                  criteria.Year.Equals(obj.Attribute(PlaylistReader.year).Value) ?
-                                  obj.Attribute(PlaylistReader.year).Value : "",
+                                  obj.Attribute(From1.year).Value :
+                                  criteria.Year.Equals(obj.Attribute(From1.year).Value) ?
+                                  obj.Attribute(From1.year).Value : "",
 
                                   genre = criteria.Genre.Equals("") ?
-                                  obj.Attribute(PlaylistReader.genre).Value :
-                                  criteria.Genre.Equals(obj.Attribute(PlaylistReader.genre).Value) ?
-                                  obj.Attribute(PlaylistReader.genre).Value : "",
+                                  obj.Attribute(From1.genre).Value :
+                                  criteria.Genre.Equals(obj.Attribute(From1.genre).Value) ?
+                                  obj.Attribute(From1.genre).Value : "",
 
                                   company = criteria.Company.Equals("") ?
-                                  obj.Attribute(PlaylistReader.company).Value :
-                                  criteria.Company.Equals(obj.Attribute(PlaylistReader.company).Value) ?
-                                  obj.Attribute(PlaylistReader.company).Value : "",
+                                  obj.Attribute(From1.company).Value :
+                                  criteria.Company.Equals(obj.Attribute(From1.company).Value) ?
+                                  obj.Attribute(From1.company).Value : "",
 
                                   rating = criteria.Rating.Equals("") ?
-                                  obj.Attribute(PlaylistReader.rating).Value :
-                                  criteria.IsRatingInCriteria(obj.Attribute(PlaylistReader.rating).Value, criteria.Rating) ?
-                                  obj.Attribute(PlaylistReader.rating).Value : "",
+                                  obj.Attribute(From1.rating).Value :
+                                  criteria.IsRatingInCriteria(obj.Attribute(From1.rating).Value, criteria.Rating) ?
+                                  obj.Attribute(From1.rating).Value : "",
 
                                   price = criteria.Price.Equals("") ?
-                                  obj.Attribute(PlaylistReader.price).Value :
-                                  criteria.IsPriceInCriteria(obj.Attribute(PlaylistReader.price).Value, criteria.Price) ?
-                                  obj.Attribute(PlaylistReader.price).Value : "",
+                                  obj.Attribute(From1.price).Value :
+                                  criteria.IsPriceInCriteria(obj.Attribute(From1.price).Value, criteria.Price) ?
+                                  obj.Attribute(From1.price).Value : "",
                               };
 
             foreach (var gameElem in gamesInList)
@@ -286,4 +232,5 @@ namespace Lab3
             return games;
         }
     }
+    #endregion
 }

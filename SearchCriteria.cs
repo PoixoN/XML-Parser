@@ -6,56 +6,52 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Lab3
+namespace XmlParser
 {
     public struct SearchCriteria
     {
-        private readonly string _genre;
-        private readonly string _year;
-        private readonly string _company;
-        private readonly string _rating;
-        private readonly string _price;
-
-        public string Genre { get { return _genre; } }
-        public string Year { get { return _year; } }
-        public string Company { get { return _company; } }
-        public string Rating { get { return _rating; } }
-        public string Price { get { return _price; } }
+        #region Propeties
+        public string Genre { get; }
+        public string Year { get; }
+        public string Company { get; }
+        public string Rating { get; }
+        public string Price { get; }
+        #endregion
 
         public SearchCriteria(XmlNode game)
         {
-            _genre = game.Attributes[PlaylistReader.genre].Value;
-            _year = game.Attributes[PlaylistReader.year].Value;
-            _company = game.Attributes[PlaylistReader.company].Value;
-            _rating = game.Attributes[PlaylistReader.rating].Value;
-            _price = game.Attributes[PlaylistReader.price].Value;
+            Genre = game.Attributes[From1.genre].Value;
+            Year = game.Attributes[From1.year].Value;
+            Company = game.Attributes[From1.company].Value;
+            Rating = game.Attributes[From1.rating].Value;
+            Price = game.Attributes[From1.price].Value;
         }
 
         public SearchCriteria(string genre, string year, string company, string rating, string price)
         {
-            _genre = genre;
-            _year = year;
-            _company = company;
-            _rating = rating;
-            _price = price;
+            Genre = genre;
+            Year = year;
+            Company = company;
+            Rating = rating;
+            Price = price;
         }
 
 
         public bool AllCriteriaAreEmpty()
         {
-            return _genre.Equals("") && _year.Equals("") &&
-                   _company.Equals("") && _rating.Equals("") && _price.Equals("");
+            return Genre.Equals("") && Year.Equals("") &&
+                   Company.Equals("") && Rating.Equals("") && Price.Equals("");
         }
 
         public List<string> GetCriteriaList()
         {
             List<string> result = new List<string>();
 
-            result.Add(_genre);
-            result.Add(_year);
-            result.Add(_company);
-            result.Add(_rating);
-            result.Add(_price);
+            result.Add(Genre);
+            result.Add(Year);
+            result.Add(Company);
+            result.Add(Rating);
+            result.Add(Price);
 
             return result;
         }

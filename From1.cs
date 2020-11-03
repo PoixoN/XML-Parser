@@ -9,14 +9,19 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Xsl;
+using System.Xml.Linq;
 
-namespace Lab3
+namespace XmlParser
 {
-    public partial class PlaylistReader : Form
+    public partial class From1 : Form
     {
-        public const string dataPath = @"C:\Users\poixo\Desktop\Lab3\Data.xml";
-        private const string _transformerPath = @"C:\Users\poixo\Desktop\Lab3\transformer.xsl";
-        private const string _htmlPath = @"C:\Users\poixo\Desktop\Lab3\output.html";
+        #region File paths
+        public static string dataPath = @"C:\Users\PoixoN\Desktop\XML Parser\Data.xml";
+        private const string _transformerPath = @"C:\Users\PoixoN\Desktop\XML Parser\transformer.xsl";
+        private const string _htmlPath = @"C:\Users\PoixoN\Desktop\XML Parser\output.html";
+        #endregion
+
+        #region XML atrributes
         public const string gameTag = "Game";
         public const string name = "Name";
         public const string year = "Year";
@@ -26,19 +31,42 @@ namespace Lab3
         public const string price = "Price";
         string[] priceCriterias = { "1. Only Free", "2. Less 10$", "3. Less 45$", "4. Less 130$", "5. More 130$" };
         string[] ratingCriterias = { "0-2", "2-4", "4-7", "7-9", "9-10" };
+        #endregion
 
-        public PlaylistReader()
+        public From1()
         {
             InitializeComponent();
         }
 
-        private void PlaylistReader_Load(object sender, EventArgs e)
+        private void XML_Load(object sender, EventArgs e)
         {
-            FillCriteriaLists();
+            CreateCriteriaLists();
         }
 
-        // Retrieves games' data from the playlist file to be added to criteria lists.
-        private void FillCriteriaLists()
+        private void From1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult dialog = MessageBox.Show(
+                "Are you sure you want to exit the program?",
+                "End of the program",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+
+            if (dialog == DialogResult.Yes)
+            {
+                e.Cancel = false;
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
+        #region SubFunctions
+        /// <summary>
+        /// Add criteria to from's lists from the xml file
+        /// </summary>
+        private void CreateCriteriaLists()
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(dataPath);
@@ -63,7 +91,9 @@ namespace Lab3
             }
         }
 
-        // Adds search criteria to lists.
+        /// <summary>
+        /// // Add search criteria to the form's lists
+        /// </summary>
         private void AddCriteria(SearchCriteria criteria)
         {
             if (!dlGenre.Items.Contains(criteria.Genre))
@@ -80,31 +110,23 @@ namespace Lab3
             }
         }
 
-        // Invoked when 'Search' button is clicked.
-        private void searchBtn_Click(object sender, EventArgs e)
-        {
-            Search();
-        }
-
-        // Performs the search in the playlist under specified criteria.
         private void Search()
         {
-            ISearch search = new DomSearch();
-            
+            ISearch search = new LinqToXmlSearch(); 
+
             if (rbtnSax.Checked)
             {
                 search = new SaxSearch();
             }
-            if (rbtnLinq.Checked)
+            if (rbtnDom.Checked)
             {
-                search = new LinqToXmlSearch();
+                search = new DomSearch();
             }
 
             List<Game> games = search.Search(GetSearchCriteria());
             OutputSearchResults(games);
         }
 
-        // Returns the specified search criteria.
         private SearchCriteria GetSearchCriteria()
         {
             string genre = cbGenre.Checked ? dlGenre.Text : "";
@@ -116,15 +138,18 @@ namespace Lab3
             return new SearchCriteria(genre, year, company, rating, price);
         }
 
-        // Outputs search resutls into the search results viewer.
+        /// <summary>
+        /// Outputs search resutls into the rich text box
+        /// </summary>
         private void OutputSearchResults(List<Game> games)
         {
             rtbSearchResults.Clear();
 
-            for (int i = 0, cntResult = 1; i < games.Count; ++i)
+            for (int i = 0, cntResult = 0; i < games.Count; ++i)
             {
                 if (games[i] != null)
                 {
+                    ++cntResult;
                     rtbSearchResults.Text += $"-=-=-=-=-=-=-Result {cntResult}-=-=-=-=-=-=-\n";
                     rtbSearchResults.Text += $"{name} : {games[i].Name}\n";
                     rtbSearchResults.Text += $"{company} : {games[i].Company}\n";
@@ -132,12 +157,75 @@ namespace Lab3
                     rtbSearchResults.Text += $"{genre} : {games[i].Genre}\n";
                     rtbSearchResults.Text += $"{year} : {games[i].Year}\n";
                     rtbSearchResults.Text += $"{price} : {games[i].Price}\n";
-                    ++cntResult;
                 }
             }
         }
 
-        private void genreCheckBox_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Transform xml file to html file into the root folder
+        /// </summary>
+        private void TransformToHtml()
+        {
+            XslCompiledTransform xct = new XslCompiledTransform();
+            xct.Load(_transformerPath);
+            xct.Transform(dataPath, _htmlPath);
+        }
+        #endregion
+
+        #region ToolStripMenuItems
+        private void tsmiLoadXMLFile_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "xml files (*.xml)|*.xml|All|*.*";
+                openFileDialog.ShowDialog();
+                dataPath = openFileDialog.FileName;
+
+                var _ = XDocument.Load(From1.dataPath);
+            }
+            catch
+            {
+                MessageBox.Show("Please choose another file", "ERROR: open file is failed");
+            }
+        }
+
+        private void tsmiTransformToHTML_Click(object sender, EventArgs e)
+        {
+            TransformToHtml();
+        }
+
+        private void tsmiHelp_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(@"Some Explanations:
+                Name - The game's name 
+                Year - Release year
+                Genre - The game's Genre 
+                Company - The company that released this game
+                Rating - World ranking of the game
+                Price - price in dollars
+
+                In order to get started you need to select one of the items 
+                then select the interface and click 'Search'.
+
+                To save in HTML you just need go to the menu
+                'File' and select 'Transform to HTML'. File automatically
+                will be saved in the root folder of the program.", "Help");
+        }
+
+        private void tsmiAboutUs_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("The program is created by The Grassman's\n\nOur Email: thegrassmans.inc@gmail.com", "About us");
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        #endregion 
+
+        #region CheckBoxes
+        private void cbGenre_CheckedChanged(object sender, EventArgs e)
         {
             dlGenre.Enabled = !dlGenre.Enabled;
             if (cbGenre.Checked)
@@ -146,7 +234,7 @@ namespace Lab3
             }
         }
 
-        private void yearCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void cbYear_CheckedChanged(object sender, EventArgs e)
         {
             dlYear.Enabled = !dlYear.Enabled;
             if (cbYear.Checked)
@@ -155,7 +243,7 @@ namespace Lab3
             }
         }
 
-        private void labelCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void cbCompany_CheckedChanged(object sender, EventArgs e)
         {
             dlCompany.Enabled = !dlCompany.Enabled;
             if (cbCompany.Checked)
@@ -181,29 +269,25 @@ namespace Lab3
                 dlPrice.Text = dlPrice.Items[0].ToString();
             }
         }
+        #endregion
 
-        //Invoked when 'Forge HTML' button is clicked.
-        private void forgeHtmlBtn_Click(object sender, EventArgs e)
+        #region Buttons
+        private void btnSearch_Click(object sender, EventArgs e)
         {
-            ForgeHtml();
+            try
+            {
+                Search();
+            }
+            catch
+            {
+                MessageBox.Show("Problem with XML file\nPlease choose another XML file", "ERROR: search failed");
+            }
         }
 
-        // Transforms the XML playlist file into an HTML file containing table-reprsented playlist.
-        private void ForgeHtml()
-        {
-            XslCompiledTransform xct = new XslCompiledTransform();
-            xct.Load(_transformerPath);
-            xct.Transform(dataPath, _htmlPath);
-        }
-
-        private void tsmiHelp_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("BLA BLA BLA", "Help");
-        }
-
-        private void button1_Click(object sender, EventArgs e)
+        private void btnClear_Click(object sender, EventArgs e)
         {
             rtbSearchResults.Clear();
         }
+        #endregion
     }
 }
